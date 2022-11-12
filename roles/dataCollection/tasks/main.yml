@@ -1,0 +1,5 @@
+---
+# tasks file for dataCollection
+- name: Generate report
+  block:
+    - include_tasks: datacollection.yml

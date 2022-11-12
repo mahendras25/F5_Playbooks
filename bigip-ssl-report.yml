@@ -1,0 +1,32 @@
+---
+ - name: BIG-IP SETUP
+   hosts: lb
+   gather_facts: no
+   no_log: no
+   tasks:
+    - name: COLLECTING DATA FROM F5
+      include_role:
+        name: dataCollection  
+        
+ - name: PROCESSING DATA IN OUTPUT FILE
+   hosts: "{{ jump_host }}"
+   gather_facts: no
+   no_log: false   
+   tasks:
+    - name: PROCESSING DATA
+      include_role:
+        name: dataProcess   
+
+ - name: SENDING DATA AND CLEANUP
+   hosts: lb
+   gather_facts: no
+   no_log: false 
+   tasks:
+    - name: SENDING REPORT AND CLEANUP
+      include_role:
+        name: EmaildataClean   
+
+    
+
+
+

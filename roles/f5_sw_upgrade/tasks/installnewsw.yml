@@ -1,0 +1,35 @@
+- name: Installing BIG-IP New image
+  bigip_software_install:
+    image: "{{ image }}"
+    volume: "{{ vol }}"
+    state: installed
+    provider: "{{ provider }}"
+  delegate_to: "{{ jump_host }}"
+
+- name: Verifing the new installation
+  bigip_device_info:
+    gather_subset: 
+      - software-volumes
+    provider: "{{ provider }}"
+  register: bigip_sw_install
+  delegate_to: "{{ jump_host }}"
+
+- name: Displays the device info
+  debug:
+    var: bigip_sw_install
+  delegate_to: "{{ jump_host }}"    
+    
+- name: Copying the config to new volume "{{ vol }}"
+  bigip_command:
+    provider: "{{ provider }}"
+    commands: bash -c "cpcfg --source={{ oldvol }} {{ vol }}"
+  ignore_errors: yes
+  delegate_to: "{{ jump_host }}"       
+
+- name: Activating the BIG-IP new SW Image
+  bigip_software_install:
+    image: "{{ image }}"
+    volume: "{{ vol }}"
+    state: activated
+    provider: "{{ provider }}"
+  delegate_to: "{{ jump_host }}"    

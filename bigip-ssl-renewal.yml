@@ -1,0 +1,28 @@
+---
+- name: FETCHING CERTIFICATES AND KEY 
+  hosts: "{{ jump_host }}"
+  gather_facts: no
+  no_log: yes
+  
+  tasks:
+    - name: Fetching ssl and key 
+      include_role:
+        name: nw_f5_fetch
+      tags:
+        - always        
+
+- name: BIG-IP CERTIFICATE RENEWAL
+  hosts: lb
+  #connection: local
+  gather_facts: false
+  no_log: no
+  tasks:
+    - name: SSL Renewal 
+      include_role:
+        name: nw_f5_certrenewal
+      tags:
+        - always
+        - client 
+        - server
+        - both        
+        

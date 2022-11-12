@@ -1,0 +1,6 @@
+Profile,Cert_Name
+{% for host in ansible_play_hosts_all %}
+{%- for clientssl in hostvars[host].data.client_ssl_profiles %}
+{{clientssl.name}},{{clientssl.certificate_file}}
+{% endfor -%}
+{% endfor %}

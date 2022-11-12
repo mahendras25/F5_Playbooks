@@ -1,0 +1,7 @@
+---
+- name: DATA PROCESSING
+  ExcelModule:
+  #delegate_to: "{{ jump_host }}"
+  run_once: True
+  ignore_errors: True  
+ 

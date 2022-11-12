@@ -1,0 +1,22 @@
+---
+- name: SAVE RUNNING CONFIG ON BIG-IP
+  bigip_config:
+    provider: "{{ provider }}"
+    save: true
+  when: '"Active" in result.stdout'
+  delegate_to: "{{ jump_host }}"   
+
+- name: Download a new UCS
+  bigip_ucs_fetch:
+    src: "{{file_name_bkp}}"
+    dest: "{{csv_path}}{{file_name_bkp}}"
+    provider: "{{ provider }}"
+  when: '"Active" in result.stdout'
+  delegate_to: "{{ jump_host }}"  
+
+- name: Uploading the image to the BIG-IP
+  bigip_software_image:
+    image: "{{csv_path}}{{ image }}"
+    provider: "{{ provider }}"
+  when: '"Active" in result.stdout'    
+  delegate_to: "{{ jump_host }}"    

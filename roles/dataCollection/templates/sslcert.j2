@@ -1,0 +1,6 @@
+Cert_Name,Expiration_Date
+{% for host in ansible_play_hosts_all %}
+{%- for sslcert in hostvars[host].data.ssl_certs %}
+{{sslcert.name}},{{sslcert.expiration_date}}
+{% endfor -%}
+{% endfor %}

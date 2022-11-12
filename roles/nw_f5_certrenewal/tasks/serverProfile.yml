@@ -1,0 +1,39 @@
+---
+- name: Creating Server SSL Profile
+  bigip_profile_server_ssl: 
+    provider: "{{ provider }}"     
+    name: "{{ vip_name }}_ServerSSL_profile"
+    state: present
+  when:
+    - '"Active" in result.stdout'      
+  delegate_to: "{{ jump_host }}"
+          
+- name: Adding Certificate and Key to Server SSL Profile
+  bigip_command:
+    provider: "{{ provider }}"
+    match: "any"
+    warn: no          
+    commands:            
+      - tmsh modify ltm profile server-ssl {{ vip_name }}_ServerSSL_profile ca-file {{ ssl_cert }}.crt cert {{ ssl_cert }}.crt key {{ ssl_key }}
+  delegate_to: "{{ jump_host }}"         
+  when:
+    - '"Active" in result.stdout' 
+           
+- name: UPDATE A VIRTUAL SERVER
+  bigip_virtual_server:
+    provider: "{{provider}}"
+    name: "{{ vip_name }}"
+    port: "443"
+    profiles:
+      - name: "{{ vip_name }}_ServerSSL_profile"
+        context: server-side
+  when:
+    - '"Active" in result.stdout'        
+  delegate_to: "{{ jump_host }}"
+
+- name: SAVE RUNNING CONFIG ON BIG-IP
+  bigip_config:
+    provider: "{{ provider }}"
+    save: true
+  when: '"Active" in result.stdout'
+  delegate_to: "{{ jump_host }}"  

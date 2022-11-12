@@ -1,0 +1,25 @@
+---
+# tasks file for f5_sw_upgrade
+- name:
+  block:
+    - include_tasks: setupbigip.yml
+  tags:
+    - always
+    
+- name:
+  block:
+    - include_tasks: preinstall.yml
+  tags:
+    - preinstall    
+
+- name:
+  block:
+    - include_tasks: installnewsw.yml
+  tags:
+    - install 
+
+- name:
+  block:
+    - include_tasks: postinstallverify.yml
+  tags:
+    - postinstall     

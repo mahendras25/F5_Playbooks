@@ -1,0 +1,31 @@
+---
+- name: Create a client SSL profile with a cert/key/chain setting
+  bigip_profile_client_ssl:
+    provider: "{{ provider }}"
+    state: present
+    name: "{{ vip_name }}_ClientSSL_profile"
+    cert_key_chain:
+    - cert: "{{ ssl_cert }}"
+      key: "{{ ssl_key }}"
+  when: 
+  - '"Active" in result.stdout'
+  delegate_to: "{{ jump_host }}"
+  
+- name: UPDATE A VIRTUAL SERVER for Client SSL
+  bigip_virtual_server:
+    provider: "{{provider}}"
+    name: "{{ vip_name }}"
+    port: "443"
+    profiles:
+    - name: "{{ vip_name }}_ClientSSL_profile"
+      context: client-side
+  when: 
+  - '"Active" in result.stdout'
+  delegate_to: "{{ jump_host }}"
+
+- name: SAVE RUNNING CONFIG ON BIG-IP
+  bigip_config:
+    provider: "{{ provider }}"
+    save: true
+  when: '"Active" in result.stdout'
+  delegate_to: "{{ jump_host }}"  

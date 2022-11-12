@@ -1,0 +1,7 @@
+Host_Name,VIP_Name,VIP_Status,Profile
+{% for host in ansible_play_hosts_all %}
+{%- for prof in hostvars[host].data.virtual_servers %}
+{{host}},{{prof.name}},{{prof.availability_status}},{{prof.profiles[1].name}}
+{% endfor -%}
+{% endfor %}
+

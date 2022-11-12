@@ -1,0 +1,37 @@
+---
+- name: Preparing SSL Report File to send
+  command: mv "{{ csv_path }}Final.xlsx" "{{ csv_path }}{{ file_name }}"
+  delegate_to: "{{ jump_host }}"
+  run_once: True  
+
+- name: Sending SSL Report via email on {{ ansible_date_time.date }} at {{ ansible_date_time.time }}
+  mail:
+    host: smtp.gmail.com
+    port: 587 
+    sender: "mahendrasengar25@gmail.com"
+    username: "mahendrasengar25@gmail.com"
+    password: "gxafjrwhiskgelqp"
+    to: 
+      - "Mahendra Pratap Sengar <mahendra.pratap.sengar@kyndryl.com>"
+    subject: F5 SSL-CERT-REPORT on {{ ansible_date_time.date }} at {{ ansible_date_time.time }}
+    body: Hi Attached is the F5 SSL report with expired certificate details residing on F5.
+    attach: "{{ csv_path }}{{ file_name }}"
+    secure: starttls
+  delegate_to: "{{ jump_host }}"
+  run_once: True 
+
+- name: Cleaning up...
+  file:
+    path: "{{ item }}"
+    state: absent
+  
+  with_items:
+    - "{{ csv_path }}vip_profile2.csv"
+    - "{{ csv_path }}vip_profile1.csv"
+    - "{{ csv_path }}ssl_certs.csv"
+    - "{{ csv_path }}serverssl.csv"
+    - "{{ csv_path }}clientssl.csv"
+    - "{{ csv_path }}/expired.csv"
+    - "{{ csv_path }}{{ file_name }}"
+  delegate_to: "{{ jump_host }}"
+  run_once: True 

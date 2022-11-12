@@ -1,0 +1,5 @@
+---
+# tasks file for EmaildataClean
+- name: SENDING REPORT OVER EMAIL AND CLEANUP
+  block:
+    - include_tasks: EmailNCleanup.yml

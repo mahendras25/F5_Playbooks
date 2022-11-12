@@ -1,0 +1,13 @@
+---
+- name: POST VERIFICATION 
+  bigip_command:
+    provider: "{{ provider }}"
+    match: "any"
+    warn: no
+    commands:
+      - tmsh show running-config
+      - tmsh list /sys software volume
+      - tmsh list /sys software image
+      - tmsh show sys software
+  register: result
+  delegate_to: "{{ jump_host }}"

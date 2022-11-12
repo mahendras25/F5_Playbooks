@@ -1,0 +1,12 @@
+---
+- name: Copying Certificate Files and Keys
+  fetch:
+    src: "/tmp/{{ item }}"
+    dest: "/tmp/"
+    flat: true
+    fail_on_missing: yes
+    validate_checksum: no
+  loop:
+  - "{{ ssl_key }}"
+  - "{{ ssl_cert }}"
+  register: output_fetch

@@ -1,0 +1,14 @@
+---
+- name: F5 SW UPGRADE
+  hosts: lb
+  gather_facts: false
+  no_log: no
+  tasks:
+    - name: F5 Software Upgrade
+      include_role:
+       name: f5_sw_upgrade    
+      tags:
+        - always
+        - preinstall 
+        - install
+        - postinstall       

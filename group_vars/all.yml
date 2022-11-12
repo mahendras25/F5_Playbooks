@@ -1,0 +1,21 @@
+---
+f5_admin_port: 443
+ansible_python_interpreter: /usr/bin/python3
+file_name: "F5_SSL_Report_{{ ansible_date_time.date }}_{{ ansible_date_time.time }}.xlsx"
+file_name_bkp: "backup_{{ inventory_hostname }}_{{ ansible_date_time.date }}.ucs"
+headers: Host_Name,Cert_Name,Expiration_On_Date
+local_folder_location: /tmp/
+ssl_file_location: /tmp/
+csv_path: /tmp/
+
+#To be provided as extra vars for upgrade playbook 
+image: "BIGIP-16.1.2.2-0.0.28.iso"
+vol: "HD1.2"
+oldvol: "HD1.1"
+# To be provided as extra vars for cert renewal
+ssl_cert: "testcert.cer"
+ssl_key: "testcert.key"
+vip_name: "TEST-APP"
+
+#jump_host is to be given as extra-vars for all playbooks
+

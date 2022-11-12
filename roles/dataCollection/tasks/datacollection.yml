@@ -1,0 +1,111 @@
+---
+- name: Setup provider
+  ansible.builtin.set_fact:
+    provider:
+      server: "{{ ansible_host }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      server_port: "{{ f5_admin_port }}"
+      validate_certs: false
+  no_log: true    
+  delegate_to: "{{ jump_host }}"            
+
+- setup:
+    gather_subset:
+      - min 
+  delegate_to: "{{ jump_host }}"          
+
+- name: Collect all BIG-IP information
+  bigip_device_info:
+    gather_subset:
+      - virtual-servers
+      - server-ssl-profiles
+      - client-ssl-profiles
+      - ssl-certs
+    provider: "{{ provider }}"
+  register: data
+  delegate_to: "{{ jump_host }}"
+  
+- name: Server Prof. Output
+  template:
+    src: serverprof.j2
+    dest: "{{ csv_path }}vip_profile1.csv"
+  delegate_to: "{{ jump_host }}"        
+
+- name: Client Prof. Output
+  template:
+    src: clientprof.j2
+    dest: "{{ csv_path }}vip_profile2.csv"
+  delegate_to: "{{ jump_host }}"    
+
+- name: Server SSL. Output
+  template:
+    src: serverssl.j2
+    dest: "{{ csv_path }}serverssl.csv"
+  delegate_to: "{{ jump_host }}"  
+
+- name: Client SSL. Output
+  template:
+    src: clientssl.j2
+    dest: "{{ csv_path }}clientssl.csv"
+  delegate_to: "{{ jump_host }}"   
+
+- name: SSL/EXP. Output
+  template:
+    src: sslcert.j2
+    dest: "{{ csv_path }}ssl_certs.csv"
+  delegate_to: "{{ jump_host }}"  
+  
+- name: Collecting Expired SSL Certs on F5
+  bigip_command:
+    provider: "{{ provider }}"
+    match: "any"
+    warn: no
+    commands:
+      - tmsh run /sys crypto check-cert ignore-large-cert-bundles enabled
+  register: result
+  delegate_to: "{{ jump_host }}"  
+  
+- name: Filtering output for expired certificates
+  block:
+    - name: Filter Output
+      set_fact:  
+        certName: |  
+          {{result.stdout_lines[0] |   
+            map('regex_findall','\/Common\/\S*') |   
+            map('join') | list }}
+        expOn: |  
+          {{result.stdout_lines[0] |   
+            map('regex_findall','expired.on.(.+)') |   
+            map('join') | list }}
+      delegate_to: "{{ jump_host }}"        
+    
+    - name: zip output
+      set_fact:
+        zipped_data: "{{ certName | zip(expOn) | list }}"
+      delegate_to: "{{ jump_host }}"              
+  ignore_errors: yes
+  rescue:
+    - name: Error Handling
+      debug:
+        msg: "No Expired Certificates on {{ inventory_hostname }}"
+        
+- name: Generating Cert Exp Status
+  ansible.builtin.lineinfile:
+    path: "{{ csv_path }}/expired.csv"
+    line: "{{ headers }}"
+    create: true
+    state: present 
+  run_once: True  
+  delegate_to: "{{ jump_host }}"
+
+- name: "Save cert and expiry info"
+  lineinfile:
+    path: "{{ csv_path }}/expired.csv"
+    line: "{{ inventory_hostname }},{{ item[0] }},{{ item[1] }}"
+    state: present
+    create: true    
+  loop: "{{ zipped_data }}"
+  delegate_to: "{{ jump_host }}" 
+         
+ 

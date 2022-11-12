@@ -1,0 +1,73 @@
+---
+- name: Setup provider
+  ansible.builtin.set_fact:
+    provider:
+      server: "{{ ansible_host }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      server_port: "{{ f5_admin_port }}"
+      validate_certs: false
+  no_log: no    
+  delegate_to: "{{ jump_host }}"
+  
+- name: Find Active Machine
+  bigip_command:
+    provider: "{{ provider }}"
+    match: "any"
+    warn: no
+    commands:
+      - bash -c "cat /var/prompt/ps1"
+  register: result      
+  delegate_to: "{{ jump_host }}"
+  
+- debug:
+    var: result.stdout        
+    
+- name: SSL cert upload
+  bigip_ssl_certificate:
+    provider: "{{ provider }}"
+    name: "{{ ssl_cert }}"
+    content: "{{ lookup('file', ssl_cert) }}"
+  when: 
+  - '"Active" in result.stdout'
+  - ssl_file_location is not defined      
+  delegate_to: "{{ jump_host }}" 
+  
+- name: SSL key upload
+  bigip_ssl_key:
+    provider: "{{ provider }}"
+    name: "{{ ssl_key }}"
+    content: "{{ lookup('file', ssl_key) }}"
+  when: 
+  - '"Active" in result.stdout'
+  - ssl_file_location is not defined      
+  delegate_to: "{{ jump_host }}"      
+  
+- name: SSL cert upload
+  bigip_ssl_certificate:
+    provider: "{{ provider }}"
+    name: "{{ ssl_cert }}"
+    content: "{{ lookup('file', ssl_file_location + ssl_cert) }}"
+  when: 
+  - '"Active" in result.stdout'
+  - ssl_file_location is defined
+  delegate_to: "{{ jump_host }}"
+  
+- name: SSL key upload
+  bigip_ssl_key:
+    provider: "{{ provider }}"
+    name: "{{ ssl_key }}"
+    content: "{{ lookup('file', ssl_file_location + ssl_key) }}"
+  when: 
+  - '"Active" in result.stdout'
+  - ssl_file_location is defined
+  delegate_to: "{{ jump_host }}"
+    
+#- name: SAVE RUNNING CONFIG ON BIG-IP
+#  bigip_config:
+#    provider: "{{ provider }}"
+#    save: true
+#  when: '"Active" in result.stdout'
+#  delegate_to: "{{ jump_host }}"  
+  
+  

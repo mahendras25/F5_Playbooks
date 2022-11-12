@@ -1,0 +1,25 @@
+---
+# tasks file for nw_f5_certrenewal
+- name: Setting up BIGIP and uploading Certificates/Keys
+  block:
+    - include_tasks: bigipsetup.yml
+  tags:
+    - always  
+       
+- name: Creating Client Profile and attaching Certificates/Keys
+  block:
+    - include_tasks: clientProfile.yml
+  tags:
+    - client 
+    
+- name: Creating Server Profile and attaching Certificates/Keys
+  block:
+    - include_tasks: serverProfile.yml
+  tags:
+    - server     
+
+- name: Creating Server and Client Profile Both
+  block:
+    - include_tasks: both.yml
+  tags:
+    - both  

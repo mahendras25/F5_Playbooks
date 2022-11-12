@@ -1,0 +1,5 @@
+---
+# tasks file for dataProcess
+- name: PROCESSING DATA
+  block:
+    - include_tasks: dataprocessing.yml
